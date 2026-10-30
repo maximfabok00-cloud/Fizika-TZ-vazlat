@@ -132,6 +132,30 @@
     padding: 28px 18px;
   }
   .done.show { display: block; }
+
+  /* Kvíz */
+  .quiz-wrap { margin-top: 48px; }
+  .quiz-wrap h2 { font-size: 1.35rem; color: var(--text); }
+  .qz-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 18px;
+  }
+  .qz-q { font-size: 1.15rem; font-weight: 600; margin-bottom: 14px; }
+  .qz-opts { display: grid; gap: 8px; }
+  .qz-opt {
+    text-align: left;
+    padding: 10px 14px;
+    border-radius: 10px;
+    line-height: 1.4;
+  }
+  .qz-opt.locked { cursor: default; }
+  .qz-opt.locked:hover { border-color: var(--border); }
+  .qz-opt.right { border-color: var(--good); background: rgba(31,157,98,.14); }
+  .qz-opt.wrong { border-color: #d64545; background: rgba(214,69,69,.14); }
+  .qz-fb { min-height: 1.6em; margin: 12px 0 4px; color: var(--muted); }
+  button:disabled { opacity: .5; cursor: default; }
 </style>
 </head>
 <body>
@@ -225,6 +249,26 @@
       <button class="primary" id="redo">Újra az ismeretlenekkel</button>
     </div>
   </div>
+  <div class="quiz-wrap">
+    <h2>Kvíz</h2>
+    <div class="progress" id="qzProgress"></div>
+    <div class="bar"><div id="qzBar"></div></div>
+
+    <div class="qz-box" id="qzBox">
+      <div class="qz-q" id="qzQ"></div>
+      <div class="qz-opts" id="qzOpts"></div>
+      <div class="qz-fb" id="qzFb"></div>
+      <div class="controls">
+        <button class="primary" id="qzNext" disabled>Következő →</button>
+      </div>
+    </div>
+
+    <div class="done" id="qzDone">
+      <h2 id="qzTitle" style="color:var(--good)">Kész a kvíz!</h2>
+      <p id="qzResult"></p>
+      <button class="primary" id="qzRestart">Kvíz újra</button>
+    </div>
+  </div>
 </main>
 
 <script>
@@ -310,6 +354,129 @@
   };
 
   render();
+
+  /* ---------- Kvíz ---------- */
+  // Minden kérdésnél az első válasz a helyes; megjelenítéskor a sorrend összekeveredik.
+  var quizData = [
+    { q: "Mi a tudományos eredmény elérésének helyes sorrendje?",
+      a: ["Megfigyelés → elgondolás → kísérlet → elmélet → újabb kísérletek",
+          "Elmélet → megfigyelés → kísérlet",
+          "Kísérlet → elmélet → megfigyelés → elgondolás",
+          "Elgondolás → elmélet → megfigyelés"],
+      why: "Előbb megfigyelünk, majd elgondolást alkotunk, kísérletekkel megerősítjük, elméletet alkotunk, és azt újabb kísérletekkel igazoljuk." },
+    { q: "Kik alkalmazzák elsősorban a tudományos eredményeket?",
+      a: ["A mérnökök", "A tanárok", "A közgazdászok", "A történészek"],
+      why: "A tudományos eredményeket elsősorban a mérnökök alkalmazzák." },
+    { q: "Melyik az idő alapegysége?",
+      a: ["A másodperc", "A méter", "A kilogramm", "A Celsius-fok"],
+      why: "Az alapegységek: méter, másodperc, kilogramm, Celsius-fok. Az idő egysége a másodperc." },
+    { q: "Melyik mennyiség mértékegységét a Celsius-fok adja meg?",
+      a: ["A hőmérsékletét", "A hosszúságét", "A tömegét", "A térfogatét"],
+      why: "A Celsius-fok a Celsius-skála beosztása, vagyis a hőmérséklet egysége." },
+    { q: "Min alapulnak többnyire a mértékegység-átváltások?",
+      a: ["Tízessel való szorzáson vagy osztáson", "Százhússzal való szorzáson", "Mindig hatvanas váltószámon", "Összeadáson és kivonáson"],
+      why: "Az átváltás tízessel szorzáson vagy osztáson alapul, néhány kivétellel (például az idő egységei)." },
+    { q: "Mitől függ egy mérés pontossága?",
+      a: ["A mérőeszköz választásától és a mérés módjától", "Csak a mért tárgy méretétől", "A mérés időpontjától", "A mérést végző személy nevétől"],
+      why: "A pontosság a mérőeszköz választásától és a mérés módjától függ." },
+    { q: "Mivel kaphatunk jó becslést egy mérésre?",
+      a: ["A mérési adatok átlagolásával", "Egyetlen mérés eredményével", "A legnagyobb adat kiválasztásával", "A legkisebb adat kiválasztásával"],
+      why: "A mérési adatok átlagolása jó becslést ad." },
+    { q: "Melyik NEM szerepel a jegyzet legfontosabb arányosságai között?",
+      a: ["Köbös arányosság", "Egyenes arányosság", "Fordított arányosság", "Négyzetes arányosság"],
+      why: "A legfontosabbak: egyenes, fordított és négyzetes arányosság." },
+    { q: "Mi a sűrűség?",
+      a: ["A tömeg és a térfogat hányadosa", "A térfogat és a tömeg hányadosa", "A tömeg és a térfogat szorzata", "A tömeg és a térfogat különbsége"],
+      why: "Az anyag sűrűsége a tömegének és a térfogatának a hányadosa (ρ = tömeg / térfogat)." },
+    { q: "Hogyan függ össze az anyag tömege és térfogata?",
+      a: ["A tömeg egyenesen arányos a térfogattal", "A tömeg fordítottan arányos a térfogattal", "A tömeg a térfogat négyzetével arányos", "Nincs köztük kapcsolat"],
+      why: "Az anyag tömege egyenesen arányos a térfogatával." }
+  ];
+
+  var qzOrder = [], qzIdx = 0, qzScore = 0, qzLocked = false;
+
+  function qzShuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  function qzStart() {
+    qzOrder = qzShuffle(quizData.slice());
+    qzIdx = 0; qzScore = 0;
+    qzRender();
+  }
+
+  function qzRender() {
+    var box = document.getElementById("qzBox");
+    var done = document.getElementById("qzDone");
+    var total = qzOrder.length;
+
+    if (qzIdx >= total) {
+      box.style.display = "none";
+      done.classList.add("show");
+      var pct = Math.round(qzScore / total * 100);
+      var msg = pct === 100 ? "Hibátlan, szuper!" :
+                pct >= 70 ? "Nagyon jó eredmény!" :
+                pct >= 50 ? "Jó úton vagy, még érdemes átnézni a hibás részeket." :
+                            "Nézd át még egyszer a jegyzetet és a kártyákat, aztán próbáld újra.";
+      document.getElementById("qzResult").textContent =
+        qzScore + " / " + total + " helyes válasz (" + pct + "%). " + msg;
+      document.getElementById("qzProgress").textContent = "Kész";
+      document.getElementById("qzBar").style.width = "100%";
+      return;
+    }
+
+    box.style.display = "";
+    done.classList.remove("show");
+    qzLocked = false;
+
+    var item = qzOrder[qzIdx];
+    document.getElementById("qzQ").textContent = item.q;
+    document.getElementById("qzFb").textContent = "";
+    document.getElementById("qzProgress").textContent = (qzIdx + 1) + ". kérdés / " + total;
+    document.getElementById("qzBar").style.width = (qzIdx / total * 100) + "%";
+
+    var optsEl = document.getElementById("qzOpts");
+    optsEl.innerHTML = "";
+    qzShuffle(item.a.slice()).forEach(function (opt) {
+      var b = document.createElement("button");
+      b.className = "qz-opt";
+      b.textContent = opt;
+      b.onclick = function () { qzPick(b, opt, item); };
+      optsEl.appendChild(b);
+    });
+
+    var next = document.getElementById("qzNext");
+    next.disabled = true;
+    next.textContent = (qzIdx === total - 1) ? "Eredmény →" : "Következő →";
+  }
+
+  function qzPick(btn, opt, item) {
+    if (qzLocked) return;
+    qzLocked = true;
+    var correct = item.a[0];
+    var kids = document.getElementById("qzOpts").children;
+    for (var i = 0; i < kids.length; i++) {
+      kids[i].classList.add("locked");
+      if (kids[i].textContent === correct) kids[i].classList.add("right");
+    }
+    var fb = document.getElementById("qzFb");
+    if (opt === correct) {
+      qzScore++;
+      fb.textContent = "Helyes! " + item.why;
+    } else {
+      btn.classList.add("wrong");
+      fb.textContent = "Nem jó. " + item.why;
+    }
+    document.getElementById("qzNext").disabled = false;
+  }
+
+  document.getElementById("qzNext").onclick = function () { qzIdx++; qzRender(); };
+  document.getElementById("qzRestart").onclick = qzStart;
+  qzStart();
 </script>
 </body>
 </html>
