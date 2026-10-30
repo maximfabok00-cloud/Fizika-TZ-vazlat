@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fizika TZ vázlat</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --card: #ffffff;
+    --text: #1f2430;
+    --muted: #5d6578;
+    --accent: #2f5fd0;
+    --accent-soft: #e6edfc;
+    --good: #1f9d62;
+    --border: #dde1ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151822;
+      --card: #1e2230;
+      --text: #eceff7;
+      --muted: #9aa3b8;
+      --accent: #7aa2ff;
+      --accent-soft: #263253;
+      --good: #4cd08e;
+      --border: #333a50;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 56px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  h2 { font-size: 1.15rem; margin: 0 0 10px; color: var(--accent); }
+  section.note {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  section.note ul { margin: 0; padding-left: 20px; }
+  section.note li { margin: 4px 0; }
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+  .flow span.step {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .92rem;
+    font-weight: 600;
+  }
+  .flow span.arrow { color: var(--muted); }
+  .formula {
+    display: inline-block;
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 2px 10px;
+    font-weight: 600;
+  }
+
+  /* Tanulókártya */
+  .cards-wrap { margin-top: 36px; }
+  .cards-wrap h2 { font-size: 1.35rem; color: var(--text); }
+  .progress { color: var(--muted); font-size: .92rem; margin-bottom: 10px; }
+  .bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
+  .bar > div { height: 100%; width: 0; background: var(--good); transition: width .25s; }
+  .scene { perspective: 1200px; }
+  .flashcard {
+    position: relative;
+    width: 100%;
+    min-height: 220px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform .5s;
+  }
+  .flashcard.flipped { transform: rotateY(180deg); }
+  .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,.06);
+  }
+  .face .tag {
+    position: absolute;
+    top: 12px; left: 16px;
+    font-size: .75rem;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .face.front .text { font-size: 1.3rem; font-weight: 600; }
+  .face.back { transform: rotateY(180deg); background: var(--accent-soft); }
+  .face.back .text { font-size: 1.1rem; }
+  .hint { color: var(--muted); font-size: .85rem; margin-top: 10px; text-align: center; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+  button {
+    font: inherit;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.good { border-color: var(--good); color: var(--good); }
+  .done {
+    display: none;
+    text-align: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 18px;
+  }
+  .done.show { display: block; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Fizika TZ – vázlat</h1>
+  <p class="sub">Rövidített jegyzet és tanulókártyák</p>
+
+  <section class="note">
+    <h2>1. A fizika és a tudományos megismerés</h2>
+    <ul>
+      <li>A fizika a természet alapvető jelenségeit tanulmányozza.</li>
+      <li>A tudományos eredmény útja:
+        <div class="flow">
+          <span class="step">megfigyelés</span><span class="arrow">→</span>
+          <span class="step">elgondolás</span><span class="arrow">→</span>
+          <span class="step">kísérlet</span><span class="arrow">→</span>
+          <span class="step">elmélet</span><span class="arrow">→</span>
+          <span class="step">újabb kísérletek</span>
+        </div>
+      </li>
+      <li>Az eredményeket főleg a mérnökök alkalmazzák.</li>
+    </ul>
+  </section>
+
+  <section class="note">
+    <h2>2. Fizikai mennyiségek és mérés</h2>
+    <ul>
+      <li>A tapasztalatokat fizikai mennyiségekkel jellemezzük, amelyeket mérőeszközzel, méréssel határozunk meg.</li>
+      <li>Legfontosabb mennyiségek: hosszúság, térfogat, tömeg, idő, hőmérséklet.</li>
+      <li>Alapegységek: méter, másodperc, kilogramm, Celsius-fok.</li>
+      <li>Mérés közben a mértékegységet hasonlítjuk a mérendő tulajdonsághoz.</li>
+    </ul>
+  </section>
+
+  <section class="note">
+    <h2>3. Mértékegység-váltás</h2>
+    <ul>
+      <li>Az alapegységet kisebbekre bontjuk vagy nagyobbakba vonjuk össze.</li>
+      <li>Az átváltás tízessel szorzáson/osztáson alapul (kivétel például az idő).</li>
+      <li>A mennyiségeket nagyságrendi skálán szemléltethetjük.</li>
+    </ul>
+  </section>
+
+  <section class="note">
+    <h2>4. Mérési adatok kezelése</h2>
+    <ul>
+      <li>A mérés pontossága a mérőeszköztől és a mérés módjától függ.</li>
+      <li>Jó becslés: a mérési adatok átlagolása.</li>
+      <li>Az adatokat táblázatba rendezzük, grafikonon ábrázoljuk.</li>
+    </ul>
+  </section>
+
+  <section class="note">
+    <h2>5. Arányosság és sűrűség</h2>
+    <ul>
+      <li>Fontos arányosságok: egyenes, fordított, négyzetes.</li>
+      <li>Az anyag tömege egyenesen arányos a térfogatával.</li>
+      <li>Sűrűség: <span class="formula">ρ = tömeg / térfogat</span></li>
+      <li>A sűrűséget tömeg- és térfogat-meghatározásra használjuk.</li>
+      <li>A tárgyak átlagsűrűsége is a tömeg és a térfogat hányadosa.</li>
+    </ul>
+  </section>
+
+  <div class="cards-wrap">
+    <h2>Tanulókártyák</h2>
+    <div class="progress" id="progress"></div>
+    <div class="bar"><div id="barFill"></div></div>
+
+    <div class="scene" id="scene">
+      <div class="flashcard" id="card" tabindex="0" role="button" aria-label="Kártya megfordítása">
+        <div class="face front"><span class="tag">Kérdés</span><div class="text" id="qText"></div></div>
+        <div class="face back"><span class="tag">Válasz</span><div class="text" id="aText"></div></div>
+      </div>
+    </div>
+    <div class="hint" id="hint">Kattints a kártyára a megfordításhoz (szóköz vagy Enter is jó, nyilakkal lapozhatsz)</div>
+
+    <div class="controls" id="controls">
+      <button id="prev">← Előző</button>
+      <button class="good" id="know">Tudom ✓</button>
+      <button id="again">Még gyakorlom</button>
+      <button class="primary" id="next">Következő →</button>
+    </div>
+    <div class="controls">
+      <button id="shuffle">Keverés</button>
+      <button id="restart">Újrakezdés</button>
+    </div>
+
+    <div class="done" id="done">
+      <h2 style="color:var(--good)">Végigértél a kártyákon!</h2>
+      <p id="doneText"></p>
+      <button class="primary" id="redo">Újra az ismeretlenekkel</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  var allCards = [
+    { q: "Mit tanulmányoz a fizika?", a: "A természet alapvető jelenségeit." },
+    { q: "Mi a tudományos eredmény elérésének folyamata?", a: "Megfigyelés → elgondolás → kísérletekkel megerősítés → elmélet → az elmélet igazolása újabb kísérletekkel." },
+    { q: "Kik alkalmazzák elsősorban a tudományos eredményeket?", a: "A mérnökök." },
+    { q: "Hogyan határozzuk meg a fizikai mennyiségeket?", a: "Méréssel, mérőeszköz használatával." },
+    { q: "Melyek a legfontosabb fizikai mennyiségek?", a: "Hosszúság, térfogat, tömeg, idő és hőmérséklet." },
+    { q: "Melyek a legfontosabb alapegységek?", a: "Méter, másodperc, kilogramm és a Celsius-fok (a Celsius-skála beosztása)." },
+    { q: "Min alapulnak a mértékegység-átváltások?", a: "Tízessel való szorzáson vagy osztáson (kivétel például az idő egységei)." },
+    { q: "Mitől függ egy mérés pontossága?", a: "A mérőeszköz választásától és a mérés módjától." },
+    { q: "Hogyan kapunk jó becslést egy mérésre?", a: "A mérési adatok átlagolásával." },
+    { q: "Hogyan érdemes kezelni a mérési adatokat?", a: "Táblázatba rendezni és grafikonon ábrázolni." },
+    { q: "Melyek a legfontosabb arányosságok?", a: "Egyenes, fordított és négyzetes arányosság." },
+    { q: "Hogyan függ össze az anyag tömege és térfogata?", a: "A tömeg egyenesen arányos a térfogattal." },
+    { q: "Mi a sűrűség?", a: "Az anyag tömegének és térfogatának a hányadosa (ρ = tömeg / térfogat)." },
+    { q: "Mire használjuk a sűrűséget?", a: "Tömeg- és térfogat-meghatározáshoz." },
+    { q: "Mi a tárgyak átlagsűrűsége?", a: "A tömegük és a térfogatuk hányadosa." }
+  ];
+
+  var deck = allCards.slice();
+  var idx = 0;
+  var known = {};
+  var card = document.getElementById("card");
+
+  function render() {
+    var done = document.getElementById("done");
+    var area = [document.getElementById("scene"), document.getElementById("hint"), document.getElementById("controls")];
+    var total = deck.length;
+    if (idx >= total) {
+      area.forEach(function (el) { el.style.display = "none"; });
+      var knownCount = deck.filter(function (c) { return known[c.q]; }).length;
+      document.getElementById("doneText").textContent =
+        knownCount + " / " + total + " kártyát jelöltél ismertnek.";
+      done.classList.add("show");
+      document.getElementById("progress").textContent = "Kész";
+      document.getElementById("barFill").style.width = "100%";
+      return;
+    }
+    done.classList.remove("show");
+    area[0].style.display = ""; area[1].style.display = ""; area[2].style.display = "";
+    card.classList.remove("flipped");
+    document.getElementById("qText").textContent = deck[idx].q;
+    document.getElementById("aText").textContent = deck[idx].a;
+    document.getElementById("progress").textContent = (idx + 1) + ". kártya / " + total;
+    document.getElementById("barFill").style.width = (idx / total * 100) + "%";
+  }
+
+  function flip() { card.classList.toggle("flipped"); }
+  function go(d) { idx = Math.max(0, Math.min(deck.length, idx + d)); render(); }
+
+  card.addEventListener("click", flip);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === " " || e.key === "Enter") {
+      if (document.activeElement && document.activeElement.tagName === "BUTTON") return;
+      e.preventDefault(); flip();
+    }
+    if (e.key === "ArrowRight") go(1);
+    if (e.key === "ArrowLeft") go(-1);
+  });
+
+  document.getElementById("next").onclick = function () { go(1); };
+  document.getElementById("prev").onclick = function () { go(-1); };
+  document.getElementById("know").onclick = function () { known[deck[idx].q] = true; go(1); };
+  document.getElementById("again").onclick = function () { known[deck[idx].q] = false; go(1); };
+
+  document.getElementById("shuffle").onclick = function () {
+    for (var i = deck.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+    }
+    idx = 0; render();
+  };
+  document.getElementById("restart").onclick = function () {
+    deck = allCards.slice(); known = {}; idx = 0; render();
+  };
+  document.getElementById("redo").onclick = function () {
+    var rest = deck.filter(function (c) { return !known[c.q]; });
+    deck = rest.length ? rest : allCards.slice();
+    if (!rest.length) known = {};
+    idx = 0; render();
+  };
+
+  render();
+</script>
+</body>
+</html>
