@@ -1,482 +1,415 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fizika TZ vázlat</title>
+<title>Fizika témazáró – tanulólap</title>
 <style>
-  :root {
-    --bg: #f6f7fb;
-    --card: #ffffff;
-    --text: #1f2430;
-    --muted: #5d6578;
-    --accent: #2f5fd0;
-    --accent-soft: #e6edfc;
-    --good: #1f9d62;
-    --border: #dde1ec;
+:root{
+  --bg:#f6f9fc; --card:#ffffff; --ink:#16222e; --muted:#53657a;
+  --blue:#0f7fc4; --blue-soft:#e3f1fb; --orange:#d9650b; --orange-soft:#fdeedd;
+  --line:#cfdbe7; --key:#fff6c9;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1720; --card:#17222e; --ink:#e8eef5; --muted:#9db0c4;
+    --blue:#5cb8ee; --blue-soft:#162f43; --orange:#f09a4f; --orange-soft:#3a2615;
+    --line:#2c3d50; --key:#3b3510;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #151822;
-      --card: #1e2230;
-      --text: #eceff7;
-      --muted: #9aa3b8;
-      --accent: #7aa2ff;
-      --accent-soft: #263253;
-      --good: #4cd08e;
-      --border: #333a50;
-    }
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.55;
-  }
-  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 56px; }
-  h1 { font-size: 1.7rem; margin: 0 0 4px; }
-  .sub { color: var(--muted); margin: 0 0 24px; }
-  h2 { font-size: 1.15rem; margin: 0 0 10px; color: var(--accent); }
-  section.note {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-    margin-bottom: 14px;
-  }
-  section.note ul { margin: 0; padding-left: 20px; }
-  section.note li { margin: 4px 0; }
-  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
-  .flow span.step {
-    background: var(--accent-soft);
-    color: var(--accent);
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: .92rem;
-    font-weight: 600;
-  }
-  .flow span.arrow { color: var(--muted); }
-  .formula {
-    display: inline-block;
-    background: var(--accent-soft);
-    border-radius: 8px;
-    padding: 2px 10px;
-    font-weight: 600;
-  }
-
-  /* Tanulókártya */
-  .cards-wrap { margin-top: 36px; }
-  .cards-wrap h2 { font-size: 1.35rem; color: var(--text); }
-  .progress { color: var(--muted); font-size: .92rem; margin-bottom: 10px; }
-  .bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
-  .bar > div { height: 100%; width: 0; background: var(--good); transition: width .25s; }
-  .scene { perspective: 1200px; }
-  .flashcard {
-    position: relative;
-    width: 100%;
-    min-height: 220px;
-    cursor: pointer;
-    transform-style: preserve-3d;
-    transition: transform .5s;
-  }
-  .flashcard.flipped { transform: rotateY(180deg); }
-  .face {
-    position: absolute;
-    inset: 0;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 22px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    box-shadow: 0 6px 20px rgba(0,0,0,.06);
-  }
-  .face .tag {
-    position: absolute;
-    top: 12px; left: 16px;
-    font-size: .75rem;
-    letter-spacing: .05em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .face.front .text { font-size: 1.3rem; font-weight: 600; }
-  .face.back { transform: rotateY(180deg); background: var(--accent-soft); }
-  .face.back .text { font-size: 1.1rem; }
-  .hint { color: var(--muted); font-size: .85rem; margin-top: 10px; text-align: center; }
-  .controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
-  button {
-    font: inherit;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--text);
-    padding: 8px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-  }
-  button:hover { border-color: var(--accent); }
-  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  button.good { border-color: var(--good); color: var(--good); }
-  .done {
-    display: none;
-    text-align: center;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 18px;
-  }
-  .done.show { display: block; }
-
-  /* Kvíz */
-  .quiz-wrap { margin-top: 48px; }
-  .quiz-wrap h2 { font-size: 1.35rem; color: var(--text); }
-  .qz-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px 18px;
-  }
-  .qz-q { font-size: 1.15rem; font-weight: 600; margin-bottom: 14px; }
-  .qz-opts { display: grid; gap: 8px; }
-  .qz-opt {
-    text-align: left;
-    padding: 10px 14px;
-    border-radius: 10px;
-    line-height: 1.4;
-  }
-  .qz-opt.locked { cursor: default; }
-  .qz-opt.locked:hover { border-color: var(--border); }
-  .qz-opt.right { border-color: var(--good); background: rgba(31,157,98,.14); }
-  .qz-opt.wrong { border-color: #d64545; background: rgba(214,69,69,.14); }
-  .qz-fb { min-height: 1.6em; margin: 12px 0 4px; color: var(--muted); }
-  button:disabled { opacity: .5; cursor: default; }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1720; --card:#17222e; --ink:#e8eef5; --muted:#9db0c4;
+  --blue:#5cb8ee; --blue-soft:#162f43; --orange:#f09a4f; --orange-soft:#3a2615;
+  --line:#2c3d50; --key:#3b3510;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 Georgia,"Times New Roman",serif}
+h1,h2,h3,nav,th,summary,.tag{font-family:"Trebuchet MS","Segoe UI",Verdana,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 60px}
+header h1{font-size:1.9rem;margin:6px 0 2px;color:var(--blue)}
+header p{margin:0;color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 8px}
+nav a{padding:6px 12px;border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--ink);text-decoration:none;font-size:.9rem}
+nav a:hover,nav a:focus-visible{border-color:var(--blue);outline:2px solid var(--blue);outline-offset:1px}
+section{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:6px;padding:6px 18px 16px;margin:22px 0}
+section:nth-of-type(even){border-left-color:var(--orange)}
+h2{font-size:1.35rem;margin:14px 0 8px}
+h3{font-size:1.02rem;margin:18px 0 6px;color:var(--orange)}
+p{margin:6px 0}
+ul{margin:6px 0;padding-left:22px}
+li{margin:3px 0}
+.key{background:var(--key);border-radius:6px;padding:8px 12px;margin:10px 0;font-weight:bold}
+.formula{font-family:"Trebuchet MS",sans-serif;font-size:1.25rem;text-align:center;background:var(--blue-soft);border-radius:6px;padding:10px;margin:10px 0}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0;font-family:"Trebuchet MS",sans-serif;font-size:.92rem}
+.flow span{background:var(--blue-soft);padding:5px 10px;border-radius:6px}
+.flow b{color:var(--orange)}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:.95rem}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:left}
+th{background:var(--blue-soft)}
+.scroll{overflow-x:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.box{border:1px solid var(--line);border-radius:6px;padding:8px 12px;background:var(--orange-soft)}
+.box h3{margin-top:4px}
+.ok{color:#1b8a3a;font-weight:bold}.bad{color:#c62828;font-weight:bold}
+details{border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:8px 0;background:var(--blue-soft)}
+summary{cursor:pointer;font-weight:bold}
+details p{margin-top:8px}
+button{font:inherit;font-family:"Trebuchet MS",sans-serif;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}
+button:focus-visible{outline:2px solid var(--blue)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;align-items:center}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}
+.opt.right{background:#c9f0d3;color:#0b3d1b;border-color:#1b8a3a}
+.opt.wrong{background:#f8cfcf;color:#5a0f0f;border-color:#c62828}
+.fc{min-height:190px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:1.25rem;padding:22px;border:2px solid var(--blue);border-radius:10px;background:var(--card);cursor:pointer;user-select:none;font-family:"Trebuchet MS","Segoe UI",Verdana,sans-serif}
+.fc.back{background:var(--key);border-color:var(--orange)}
+.fc:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+@media print{
+  body{font-size:11pt;background:#fff;color:#000}
+  nav,button,.noprint{display:none}
+  section{break-inside:avoid;border-color:#999}
+}
 </style>
 </head>
 <body>
-<main>
-  <h1>Fizika TZ – vázlat</h1>
-  <p class="sub">Rövidített jegyzet, tanulókártyák és kvíz</p>
+<div class="wrap">
+<header>
+  <h1>Fizika témazáró – tanulólap</h1>
+  <p>I. Bevezetés a fizikába (1–4. lecke): a lényeg röviden</p>
+  <nav>
+    <a href="#termeszet">1. Természet tanulmányozása</a>
+    <a href="#mennyisegek">2. Fizikai mennyiségek</a>
+    <a href="#nagysagrend">3. Nagyságrendek, pontosság</a>
+    <a href="#osszefuggesek">4. Összefüggések, sűrűség</a>
+    <a href="#kviz">Gyakorlás</a>
+    <a href="#kviz2">Kvíz</a>
+    <a href="#kartyak">Tanulókártyák</a>
+  </nav>
+  <button onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'">Sötét / világos mód</button>
+  <button onclick="window.print()" class="noprint">Nyomtatás</button>
+</header>
 
-  <section class="note">
-    <h2>1. A fizika és a tudományos megismerés</h2>
-    <ul>
-      <li>A fizika a természet alapvető jelenségeit tanulmányozza.</li>
-      <li>A tudományos eredmény folyamata:
-        <div class="flow">
-          <span class="step">megfigyelés</span><span class="arrow">→</span>
-          <span class="step">elgondolás</span><span class="arrow">→</span>
-          <span class="step">kísérletezés</span><span class="arrow">→</span>
-          <span class="step">elmélet</span><span class="arrow">→</span>
-          <span class="step">újabb kísérletek igazolása</span>
-        </div>
-      </li>
-      <li>A tudományos eredményeket főleg a mérnökök alkalmazzák.</li>
-    </ul>
-  </section>
+<section id="termeszet">
+  <h2>1. A természet tanulmányozása</h2>
+  <p><b>Fizika</b>: görög eredetű szó, jelentése „a természet dolgai”. A világegyetem anyagával, tárgyaival, azok mozgásával a térben és viselkedésével az időben foglalkozik.</p>
 
-  <section class="note">
-    <h2>2. Fizikai mennyiségek és mérés</h2>
-    <ul>
-      <li>A tapasztalatokat fizikai mennyiségekkel jellemezzük, amelyeket mérőeszközzel, méréssel határozunk meg.</li>
-      <li>Legfontosabb mennyiségek: hosszúság, térfogat, tömeg, idő, hőmérséklet.</li>
-      <li>Alapegységek: méter, másodperc, kilogramm, Celsius-skála beosztása, Celsius-fok.</li>
-      <li>Mérés közben a mértékegységet hasonlítjuk a mérendő tulajdonsághoz.</li>
-    </ul>
-  </section>
+  <h3>A tudományos megismerés lépései</h3>
+  <div class="flow">
+    <span>előzetes tudás</span><b>→</b><span>megfigyelés</span><b>→</b><span>elgondolás</span><b>→</b><span>kísérlet</span><b>→</b><span>elmélet</span><b>→</b><span>új tudás</span>
+  </div>
+  <ul>
+    <li><b>Elgondolás</b>: a megfigyelésből született magyarázat. Kísérlettel igazolni vagy cáfolni lehet.</li>
+    <li>Ha az elgondolás <b>nem helyes</b>, további megfigyelés kell. Ha <b>helyes</b>, a kísérletek alapján általános következtetést vonunk le: ez az <b>elmélet</b>.</li>
+    <li>Az elmélet <b>tudományos eredmény</b>. Ezzel előrejelzéseket tehetünk, és újabb kísérletekkel igazolhatjuk.</li>
+    <li>A kísérlet legyen gondosan megtervezett és <b>megismételhető</b>.</li>
+    <li>Példa: a Föld gömbölyű, mert a távolodó hajónak előbb az alja tűnik el, a teteje még látszik.</li>
+  </ul>
+  <p class="key">A fizikai ismereteket leginkább a mérnökök alkalmazzák: új anyagokat, szerkezeteket, gépeket, eljárásokat terveznek.</p>
+</section>
 
-  <section class="note">
-    <h2>3. Mértékegység-váltás</h2>
-    <ul>
-      <li>Az alapegységet kisebbekre bontjuk vagy nagyobbakba vonjuk össze.</li>
-      <li>Az átváltás tízessel szorzáson/osztáson alapul (kivétel például az idő).</li>
-      <li>A mennyiségeket nagyságrendi skálán szemléltethetjük.</li>
-    </ul>
-  </section>
+<section id="mennyisegek">
+  <h2>2. A fizikai mennyiségek</h2>
+  <ul>
+    <li><b>Tapasztalat</b>: megfigyeléskor jellemző kifejezéseket (meleg, nagy, kör alakú) és mennyiségeket (5 m, 1,2 l, 25 °C) használunk.</li>
+    <li><b>Mérés</b>: megállapítjuk, hogy az egység hányszor van meg a mérendő tulajdonságban.</li>
+    <li>A mérhető tulajdonság = <b>fizikai mennyiség</b>. Mérni <b>mérőeszközzel</b> lehet.</li>
+  </ul>
+  <div class="formula">fizikai mennyiség = mérőszám + mértékegység &nbsp;(pl. l = 4,3 cm)</div>
+  <p>Leírásban a mennyiség és az egység <b>jelét</b> használjuk.</p>
 
-  <section class="note">
-    <h2>4. Mérési adatok kezelése</h2>
-    <ul>
-      <li>A mérés pontossága a mérőeszköztől és a mérés módjától függ.</li>
-      <li>Jó becslés: a mérési adatok átlagolása.</li>
-      <li>Az adatokat táblázatba rendezzük, grafikonon ábrázoljuk.</li>
-    </ul>
-  </section>
+  <div class="scroll"><table>
+    <tr><th>Mennyiség</th><th>Jel</th><th>Mértékegység</th><th>Jel</th><th>Mérőeszköz</th></tr>
+    <tr><td>hosszúság, távolság, magasság, sugár, átmérő</td><td><i>l, s, h, r, d</i></td><td>méter</td><td>m</td><td>vonalzó, mérőszalag, tolómérce</td></tr>
+    <tr><td>felület</td><td><i>A</i></td><td>négyzetméter</td><td>m²</td><td>(számítással)</td></tr>
+    <tr><td>térfogat</td><td><i>V</i></td><td>köbméter</td><td>m³</td><td>mérőhenger, mérőpohár</td></tr>
+    <tr><td>idő</td><td><i>t</i></td><td>másodperc</td><td>s</td><td>stopper, metronóm</td></tr>
+    <tr><td>tömeg</td><td><i>m</i></td><td>kilogramm</td><td>kg</td><td>mérleg</td></tr>
+    <tr><td>hőmérséklet</td><td><i>T</i></td><td>Celsius-fok</td><td>°C</td><td>hőmérő, lázmérő</td></tr>
+  </table></div>
 
-  <section class="note">
-    <h2>5. Arányosság és sűrűség</h2>
-    <ul>
-      <li>Fontos arányosságok: egyenes, fordított, négyzetes.</li>
-      <li>Az anyag tömege egyenesen arányos a térfogatával.</li>
-      <li>Sűrűség: <span class="formula">ρ = tömeg / térfogat</span></li>
-      <li>A sűrűséget tömeg- és térfogat-meghatározásra használjuk.</li>
-      <li>A tárgyak átlagsűrűsége is a tömeg és a térfogat hányadosa.</li>
-    </ul>
-  </section>
+  <h3>Mérés és leolvasás</h3>
+  <ul>
+    <li><b>Analóg</b> eszköz: a skáláról olvassuk le. A mérőszám a skála azon jele, amely <b>legközelebb</b> van a mérendő mennyiséghez.</li>
+    <li><b>Digitális</b> eszköz: a kijelzőről olvassuk le.</li>
+    <li class="ok">Helyes: l = 4,3 cm, l = 43 mm.</li>
+    <li class="bad">Helytelen: l = 4,34 cm (a vonalzó beosztása nem enged ilyen pontosságot).</li>
+  </ul>
 
-  <div class="cards-wrap">
-    <h2>Tanulókártyák</h2>
-    <div class="progress" id="progress"></div>
-    <div class="bar"><div id="barFill"></div></div>
+  <h3>Mértékegységek eredete</h3>
+  <ul>
+    <li><b>SI</b> = nemzetközi mértékegység-rendszer. Fontos alapegységek: <b>méter, másodperc, kilogramm</b>.</li>
+    <li>1 méter: a Párizson átmenő délkör negyedének 10 milliomod része (a negyed = 10 millió m).</li>
+    <li>1 másodperc: a Nap két egymás utáni delelése között eltelt idő 86 400-ad része.</li>
+  </ul>
 
-    <div class="scene" id="scene">
-      <div class="flashcard" id="card" tabindex="0" role="button" aria-label="Kártya megfordítása">
-        <div class="face front"><span class="tag">Kérdés</span><div class="text" id="qText"></div></div>
-        <div class="face back"><span class="tag">Válasz</span><div class="text" id="aText"></div></div>
-      </div>
+  <h3>Celsius-skála</h3>
+  <ul>
+    <li>Az olvadó jég hőmérséklete <b>0 °C</b>, a forrásban lévő vízé <b>100 °C</b> (a köztük lévő rész 100 egyenlő részre van osztva).</li>
+    <li>Más skálák: Fahrenheit (°F), Kelvin (a hőmérséklet SI egysége). Elméleti leghidegebb: <b>−273 °C</b>.</li>
+    <li>Jó, ha ismered: Föld átlaga 15 °C · vaj olvad 31 °C · láz kezdete 38 °C · hidegrekord Magyarországon −35 °C · melegrekord Magyarországon 42 °C · vas olvad 1538 °C · Nap felszíne 5500 °C.</li>
+  </ul>
+</section>
+
+<section id="nagysagrend">
+  <h2>3. Nagyságrendek, pontosság</h2>
+  <h3>Előtagok (prefixumok)</h3>
+  <div class="scroll"><table>
+    <tr><th>Előtag</th><th>Jel</th><th>Jelentés</th><th>Példa</th></tr>
+    <tr><td>mega</td><td>M</td><td>1 000 000 egység</td><td>5 Mg = 5000 kg = 5 t</td></tr>
+    <tr><td>kilo</td><td>k</td><td>1000 egység</td><td>15 km = 15 000 m</td></tr>
+    <tr><td>hekto</td><td>h</td><td>100 egység</td><td>1,5 hl = 150 l</td></tr>
+    <tr><td>deka</td><td>dk</td><td>10 egység</td><td>3 dkg = 30 g</td></tr>
+    <tr><td><i>alapegység</i></td><td></td><td>1</td><td></td></tr>
+    <tr><td>deci</td><td>d</td><td>0,1 egység</td><td>1 dl = 0,1 l</td></tr>
+    <tr><td>centi</td><td>c</td><td>0,01 egység</td><td>1 cg = 0,01 g</td></tr>
+    <tr><td>milli</td><td>m</td><td>0,001 egység</td><td>1 mm = 0,001 m</td></tr>
+    <tr><td>mikro</td><td>µ</td><td>0,000001 egység</td><td>1 baktérium ≈ 1 µm</td></tr>
+  </table></div>
+  <ul>
+    <li><b>Átváltás</b>: egy lépés = <b>·10</b> vagy <b>:10</b>. Kivétel: milli ↔ mikro ↔ egység között <b>·1000</b> vagy <b>:1000</b> (és kilo → mega ·1000).</li>
+    <li>Nagyobb egység felé haladva osztunk (a mérőszám kisebb lesz), kisebb egység felé szorzunk (a mérőszám nagyobb lesz).</li>
+    <li><b>Nagyságrendi skála</b>: egy lépés jobbra tízszer nagyobb egység. A számokat hármasával csoportosítjuk (1 500 000).</li>
+  </ul>
+
+  <h3>Az idő mértékegységei</h3>
+  <div class="grid">
+    <div class="box"><h3>Pontos váltószám</h3>
+      1 perc = 60 s<br>1 óra = 60 perc = 3600 s<br>1 nap = 24 óra = 86 400 s<br>1 hét = 7 nap<br>1 év = 12 hónap
     </div>
-    <div class="hint" id="hint">Kattints a kártyára a megfordításhoz (szóköz vagy Enter is jó, nyilakkal lapozhatsz)</div>
-
-    <div class="controls" id="controls">
-      <button id="prev">← Előző</button>
-      <button class="good" id="know">Tudom ✓</button>
-      <button id="again">Még gyakorlom</button>
-      <button class="primary" id="next">Következő →</button>
-    </div>
-    <div class="controls">
-      <button id="shuffle">Keverés</button>
-      <button id="restart">Újrakezdés</button>
-    </div>
-
-    <div class="done" id="done">
-      <h2 style="color:var(--good)">Végigértél a kártyákon!</h2>
-      <p id="doneText"></p>
-      <button class="primary" id="redo">Újra az ismeretlenekkel</button>
+    <div class="box"><h3>Kerekített váltószám</h3>
+      1 hónap ≈ 4 hét ≈ 30 nap<br>1 év ≈ 52 hét<br>1 év ≈ 365 nap
     </div>
   </div>
-  <div class="quiz-wrap">
-    <h2>Kvíz</h2>
-    <div class="progress" id="qzProgress"></div>
-    <div class="bar"><div id="qzBar"></div></div>
+  <p>A másodpercnél kisebb egységekre tízes felosztás van (23 ms, 47 µs). Az évnél nagyobbakra is tízes: évtized, évszázad, évezred.</p>
 
-    <div class="qz-box" id="qzBox">
-      <div class="qz-q" id="qzQ"></div>
-      <div class="qz-opts" id="qzOpts"></div>
-      <div class="qz-fb" id="qzFb"></div>
-      <div class="controls">
-        <button class="primary" id="qzNext" disabled>Következő →</button>
-      </div>
-    </div>
+  <h3>A mérési adatok pontossága</h3>
+  <ul>
+    <li>Tökéletesen pontos mérés <b>nincs</b>. A pontosságot az eszköz <b>beosztása</b> (legkisebb mértékegysége) adja meg.</li>
+    <li>Általában az eredményt az <b>első három számjegyre kerekítjük</b>: 47 942 mm = 47 900 mm = 47,9 m; 6342,5 kg ≈ 6340 kg = 6,34 t.</li>
+    <li>A pontosság függ a <b>mérőeszköztől</b> és a <b>mérés módjától</b> (pl. stopper: a reakcióidő miatt 3–4 tized másodperc hiba is lehet).</li>
+    <li>Ha a mennyiség nem mérhető pontosan: <b>többször megmérjük</b>, és a <b>mérési adatok átlagát</b> vesszük. Az átlag nem a tényleges érték, de jó <b>becslés</b>.</li>
+    <li>Verseny (pl. távolugrás): nem átlagolnak, mert a legjobb kísérlet számít.</li>
+  </ul>
+</section>
 
-    <div class="done" id="qzDone">
-      <h2 id="qzTitle" style="color:var(--good)">Kész a kvíz!</h2>
-      <p id="qzResult"></p>
-      <button class="primary" id="qzRestart">Kvíz újra</button>
-    </div>
+<section id="osszefuggesek">
+  <h2>4. Mennyiségek közötti összefüggések</h2>
+  <h3>Adatok rendezése és ábrázolása</h3>
+  <ul>
+    <li><b>Táblázat</b>: a fejlécben a mennyiség neve, jele és mértékegysége. Az adatokat általában növekvő sorrendbe rendezzük.</li>
+    <li><b>Grafikon</b>: egy adatpár = egy pont. A tengelyekre a mennyiség jelét és mértékegységét írjuk, alkalmas beosztást választunk, és címet adunk.</li>
+  </ul>
+
+  <h3>Az arányosságok</h3>
+  <div class="grid">
+    <div class="box"><h3>Egyenes arányosság</h3>
+      <p>A <b>hányados</b> (y/x) állandó. Ahányszor nagyobb az egyik, annyiszor nagyobb a másik.</p>
+      <p><b>Grafikon:</b> az origóból induló egyenes.</p></div>
+    <div class="box"><h3>Fordított arányosság</h3>
+      <p>A <b>szorzat</b> (x·y) állandó. Ahányszor nagyobb az egyik, annyiad részére csökken a másik.</p>
+      <p><b>Grafikon:</b> hiperbola (az origót elkerüli, a tengelyekhez simul).</p></div>
+    <div class="box"><h3>Négyzetes arányosság</h3>
+      <p>Az egyik a másik <b>négyzetével</b> egyenesen arányos. Ahányszor nagyobb az egyik, annak négyzetével nagyobb a másik (2× → 4×, 3× → 9×).</p>
+      <p><b>Grafikon:</b> az origóból induló parabola.</p></div>
   </div>
-</main>
+  <p><b>Ellenőrzés:</b> kiszámoljuk a hányadosokat. Ha jó közelítéssel azonosak, az összefüggés egyenes arányosság. Hányadosoknál és átlagnál két értékes jegyre kerekítünk, a „kilógó” (hibás) értéket kihagyhatjuk az átlagból.</p>
+
+  <h3>Sűrűség</h3>
+  <p>A <b>tömeg és a térfogat egyenesen arányos</b>, hányadosuk az anyagra jellemző állandó: ez a <b>sűrűség</b>.</p>
+  <div class="formula">ρ = m / V &nbsp; (sűrűség = tömeg / térfogat)<br>m = ρ · V &nbsp;&nbsp;|&nbsp;&nbsp; V = m / ρ</div>
+  <ul>
+    <li>ρ: görög kis <i>ró</i>. Alapegysége: <b>kg/m³</b>. Gyakori még a <b>g/cm³</b>.</li>
+    <li><b>1 g/cm³ = 1000 kg/m³</b></li>
+    <li><b>Átlagsűrűség</b>: a tárgy tömegének és térfogatának hányadosa (a tárgy több anyagból áll). Nem átlagszámítás! A hajó azért úszik, mert a benne lévő levegő miatt az átlagsűrűsége kisebb a vízénél.</li>
+    <li>Sűrűség mérésekor a <b>hőmérsékletet</b> is megadják (18 vagy 20 °C), mert a hőmérséklettől függ. A gázoknál a nyomás is számít.</li>
+  </ul>
+
+  <h3>Néhány anyag sűrűsége</h3>
+  <div class="scroll"><table>
+    <tr><th>Anyag</th><th>g/cm³</th><th>kg/m³</th><th>Anyag</th><th>g/cm³</th><th>kg/m³</th></tr>
+    <tr><td>levegő</td><td>0,0013</td><td>1,3</td><td>víz (4 °C)</td><td>1</td><td>1000</td></tr>
+    <tr><td>fenyőfa</td><td>0,5</td><td>500</td><td>emberi test</td><td>1,07</td><td>1070</td></tr>
+    <tr><td>benzin</td><td>0,7</td><td>700</td><td>tengervíz</td><td>1,026</td><td>1026</td></tr>
+    <tr><td>tölgyfa, alkohol</td><td>0,8</td><td>800</td><td>kavics</td><td>2,4</td><td>2400</td></tr>
+    <tr><td>jég (0 °C), olaj</td><td>0,9</td><td>900</td><td>alumínium</td><td>2,7</td><td>2700</td></tr>
+    <tr><td>tej</td><td>1,03</td><td>1030</td><td>vas, acél</td><td>7,8</td><td>7800</td></tr>
+    <tr><td>ólom</td><td>11,3</td><td>11 300</td><td>arany</td><td>19,3</td><td>19 300</td></tr>
+    <tr><td>higany</td><td>13,6</td><td>13 600</td><td>vörösréz</td><td>8,9</td><td>8900</td></tr>
+  </table></div>
+  <ul>
+    <li>Általában: szilárd anyagok sűrűsége nagyobb, mint a folyadékoké, a gázoké a legkisebb.</li>
+    <li>Két <b>nem keveredő</b> folyadék közül a nagyobb sűrűségű az aljára süllyed, a kisebb sűrűségű felül marad. Olaj úszik a vízen (0,9 &lt; 1), a higany lemerül (13,6 &gt; 1).</li>
+  </ul>
+
+  <p class="key">Feladatnál mindig: 1) írd fel az adatokat jellel és mértékegységgel, 2) váltsd át a mértékegységeket egységesre, 3) képlet, behelyettesítés, 4) válasz mondatban.</p>
+</section>
+
+<section id="kviz">
+  <h2>Gyakorlás (kattints a válaszért)</h2>
+  <details><summary>1. Sorold fel a tudományos megismerés lépéseit!</summary>
+    <p>Előzetes tudás → megfigyelés → elgondolás → kísérlet → elmélet → új tudás.</p></details>
+  <details><summary>2. Váltsd át: 3,5 km = ? m; 250 g = ? kg; 4 dl = ? l; 90 perc = ? óra</summary>
+    <p>3500 m; 0,25 kg; 0,4 l; 1,5 óra.</p></details>
+  <details><summary>3. Hány másodperc egy nap?</summary>
+    <p>24 · 60 · 60 = 86 400 s.</p></details>
+  <details><summary>4. Hogyan helyes leírni egy vonalzós mérés eredményét, és mi a hiba az „l = 4,34 cm” alakban, ha a vonalzó mm-es beosztású?</summary>
+    <p>mérőszám + mértékegység (l = 4,3 cm). A 4,34 túl pontos: a beosztás mm, így csak tizedcentiméterig olvasható le.</p></details>
+  <details><summary>5. Milyen arányosságot jelent az origóból induló egyenes, a hiperbola, a parabola?</summary>
+    <p>Egyenes arányosság; fordított arányosság; négyzetes arányosság.</p></details>
+  <details><summary>6. Egy 50 cm³-es test tömege 135 g. Mekkora a sűrűsége? Melyik anyag lehet?</summary>
+    <p>ρ = m/V = 135 g / 50 cm³ = 2,7 g/cm³ → alumínium.</p></details>
+  <details><summary>7. Mekkora a tömege 2 m³ vasnak? (ρ = 7800 kg/m³)</summary>
+    <p>m = ρ · V = 7800 kg/m³ · 2 m³ = 15 600 kg.</p></details>
+  <details><summary>8. Miért úszik az olaj a vízen, és a higany miért süllyed el?</summary>
+    <p>Az olaj sűrűsége (0,9 g/cm³) kisebb a vízénél (1 g/cm³), a higanyé (13,6 g/cm³) nagyobb.</p></details>
+  <details><summary>9. Miért mérünk többször, és mit csinálunk az adatokkal?</summary>
+    <p>A mérés nem tökéletesen pontos. Többször mérünk, és a mérési adatok átlagát vesszük: ez jó becslés.</p></details>
+  <details><summary>10. Mi a különbség a sűrűség és az átlagsűrűség között?</summary>
+    <p>Sűrűség: egy anyagra jellemző állandó (m/V). Átlagsűrűség: egy több anyagból álló tárgy tömegének és térfogatának hányadosa.</p></details>
+</section>
+<section id="kviz2" class="noprint">
+  <h2>Kvíz (20 kérdés)</h2>
+  <p>Válassz választ, azonnal látod, jó-e. A végén újra kérheted csak a hibásakat.</p>
+  <div class="row">
+    <button id="qshuf">Keverés (új kérdéssor)</button>
+    <button id="qrestart">Újrakezdés (ugyanaz a sor)</button>
+  </div>
+  <div id="qbox" aria-live="polite"></div>
+</section>
+
+<section id="kartyak" class="noprint">
+  <h2>Tanulókártyák</h2>
+  <p>Kattints a kártyára a megfordításhoz. Billentyűzettel: ← → lapozás, ↑ ↓ fordítás.</p>
+  <div id="fc" class="fc" role="button" tabindex="0" aria-live="polite"></div>
+  <p id="fcount" style="text-align:center;color:var(--muted)"></p>
+  <div class="row">
+    <button id="fprev">Előző</button>
+    <button id="fnext">Következő</button>
+    <button id="fknow">Tudom (kivesz)</button>
+    <button id="freset">Újrakeverés (mind)</button>
+  </div>
+</section>
 
 <script>
-  var allCards = [
-    { q: "Mit tanulmányoz a fizika?", a: "A természet alapvető jelenségeit." },
-    { q: "Mi a tudományos eredmény elérésének folyamata?", a: "Megfigyelés → elgondolás → kísérletekkel megerősítés → elmélet → az elmélet igazolása újabb kísérletekkel." },
-    { q: "Kik alkalmazzák elsősorban a tudományos eredményeket?", a: "A mérnökök." },
-    { q: "Hogyan határozzuk meg a fizikai mennyiségeket?", a: "Méréssel, mérőeszköz használatával." },
-    { q: "Melyek a legfontosabb fizikai mennyiségek?", a: "Hosszúság, térfogat, tömeg, idő és hőmérséklet." },
-    { q: "Melyek a legfontosabb alapegységek?", a: "Méter, másodperc, kilogramm és a Celsius-fok (a Celsius-skála beosztása)." },
-    { q: "Min alapulnak a mértékegység-átváltások?", a: "Tízessel való szorzáson vagy osztáson (kivétel például az idő egységei)." },
-    { q: "Mitől függ egy mérés pontossága?", a: "A mérőeszköz választásától és a mérés módjától." },
-    { q: "Hogyan kapunk jó becslést egy mérésre?", a: "A mérési adatok átlagolásával." },
-    { q: "Hogyan érdemes kezelni a mérési adatokat?", a: "Táblázatba rendezni és grafikonon ábrázolni." },
-    { q: "Melyek a legfontosabb arányosságok?", a: "Egyenes, fordított és négyzetes arányosság." },
-    { q: "Hogyan függ össze az anyag tömege és térfogata?", a: "A tömeg egyenesen arányos a térfogattal." },
-    { q: "Mi a sűrűség?", a: "Az anyag tömegének és térfogatának a hányadosa (ρ = tömeg / térfogat)." },
-    { q: "Mire használjuk a sűrűséget?", a: "Tömeg- és térfogat-meghatározáshoz." },
-    { q: "Mi a tárgyak átlagsűrűsége?", a: "A tömegük és a térfogatuk hányadosa." }
-  ];
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const $=id=>document.getElementById(id);
 
-  var deck = allCards.slice();
-  var idx = 0;
-  var known = {};
-  var card = document.getElementById("card");
-
-  function render() {
-    var done = document.getElementById("done");
-    var area = [document.getElementById("scene"), document.getElementById("hint"), document.getElementById("controls")];
-    var total = deck.length;
-    if (idx >= total) {
-      area.forEach(function (el) { el.style.display = "none"; });
-      var knownCount = deck.filter(function (c) { return known[c.q]; }).length;
-      document.getElementById("doneText").textContent =
-        knownCount + " / " + total + " kártyát jelöltél ismertnek.";
-      done.classList.add("show");
-      document.getElementById("progress").textContent = "Kész";
-      document.getElementById("barFill").style.width = "100%";
-      return;
-    }
-    done.classList.remove("show");
-    area[0].style.display = ""; area[1].style.display = ""; area[2].style.display = "";
-    card.classList.remove("flipped");
-    document.getElementById("qText").textContent = deck[idx].q;
-    document.getElementById("aText").textContent = deck[idx].a;
-    document.getElementById("progress").textContent = (idx + 1) + ". kártya / " + total;
-    document.getElementById("barFill").style.width = (idx / total * 100) + "%";
+/* KVÍZ: kérdés|helyes válasz|rossz|rossz|rossz */
+const Q=[
+"A „fizika” szó eredete és jelentése?|görög: a természet dolgai|latin: a mérés tudománya|görög: az anyag mozgása|német: a természet törvényei",
+"A tudományos megismerés helyes sorrendje?|megfigyelés, elgondolás, kísérlet, elmélet|elmélet, megfigyelés, kísérlet, elgondolás|kísérlet, elmélet, elgondolás, megfigyelés|elgondolás, elmélet, megfigyelés, kísérlet",
+"Mi lesz az elméletből, ha újabb kísérletek igazolják?|tudományos eredmény|elgondolás|megfigyelés|előzetes tudás",
+"A fizikai ismereteket leginkább ki alkalmazza?|a mérnökök|a költők|a történészek|a nyelvészek",
+"Hogyan épül fel a mérési eredmény?|mérőszám + mértékegység|mérőeszköz + mérőszám|jel + mérőeszköz|mennyiség + elmélet",
+"Melyik a helyes eredmény mm-es beosztású vonalzónál?|l = 4,3 cm|l = 4,34 cm|l = 4,345 cm|l = 4 cm 3",
+"Melyik eszközzel mérünk időt?|stopper|mérleg|mérőhenger|tolómérce",
+"Hány °C-on forr a víz (a Celsius-skála szerint)?|100 °C|0 °C|37 °C|273 °C",
+"3 dkg = ? g|30 g|3 g|300 g|0,3 g",
+"5 Mg = ? kg|5000 kg|500 kg|50 kg|5 000 000 kg",
+"4 dl = ? l|0,4 l|40 l|4 l|0,04 l",
+"1 nap hány másodperc?|86 400|3600|1440|8640",
+"47 942 mm három számjegyre kerekítve?|47,9 m|47,94 m|48 m|47 942 m",
+"Mitől függ a mérés pontossága?|a mérőeszköztől és a mérés módjától|csak a mérendő mennyiségtől|csak a mértékegységtől|a hőmérsékletétől mindig",
+"Mi az egyenes arányosság grafikonja?|az origóból induló egyenes|hiperbola|parabola|vízszintes szakasz",
+"Melyik görbe tartozik a fordított arányossághoz?|hiperbola|parabola|origós egyenes|kör",
+"Ha az egyik mennyiség 3-szorosára nő, a másik 9-szeresére (négyzetes arányosság), mi lesz, ha az egyik 2-szeresére nő?|a másik 4-szeresére nő|a másik 2-szeresére nő|a másik felére csökken|a másik 8-szorosára nő",
+"Mi a sűrűség képlete?|ρ = m / V|ρ = m · V|ρ = V / m|ρ = m + V",
+"1 g/cm³ hány kg/m³?|1000|100|10|1 000 000",
+"Egy 50 cm³-es test tömege 135 g. Mekkora a sűrűsége?|2,7 g/cm³|6750 g/cm³|0,37 g/cm³|85 g/cm³",
+"Mekkora a tömege 2 m³ vasnak (ρ = 7800 kg/m³)?|15 600 kg|3900 kg|7800 kg|31 200 kg",
+"Mekkora térfogatú 500 kg tölgyfa (ρ = 800 kg/m³)?|0,625 m³|1,6 m³|400 000 m³|0,0016 m³",
+"Miért úszik az olaj a vízen?|kisebb a sűrűsége|nagyobb a sűrűsége|nagyobb a tömege|mert folyadék",
+"Mi az átlagsűrűség?|a tárgy tömegének és térfogatának hányadosa|a sűrűségek átlaga|a tömeg és az idő hányadosa|az anyag legkisebb sűrűsége"
+].map(s=>s.split('|'));
+let qs,qset,qi,score,wrong,done;
+function qStart(list,keep){qset=keep?list:sh(list).slice(0,20);qs=qset;qi=0;score=0;wrong=[];qShow()}
+$('qshuf').onclick=()=>qStart(Q);
+$('qrestart').onclick=()=>qStart(qset,true);
+function qShow(){
+  const box=$('qbox');box.textContent='';done=0;
+  if(qi>=qs.length){
+    const r=document.createElement('p');r.className='key';r.textContent='Eredmény: '+score+' / '+qs.length;box.append(r);
+    if(wrong.length){const b=document.createElement('button');b.textContent='Csak a hibásak újra ('+wrong.length+')';const w=wrong.slice();b.onclick=()=>qStart(w);box.append(b,' ')}
+    const n=document.createElement('button');n.textContent='Új kvíz';n.onclick=()=>qStart(Q);box.append(n);return;
   }
-
-  function flip() { card.classList.toggle("flipped"); }
-  function go(d) { idx = Math.max(0, Math.min(deck.length, idx + d)); render(); }
-
-  card.addEventListener("click", flip);
-  document.addEventListener("keydown", function (e) {
-    if (e.key === " " || e.key === "Enter") {
-      if (document.activeElement && document.activeElement.tagName === "BUTTON") return;
-      e.preventDefault(); flip();
-    }
-    if (e.key === "ArrowRight") go(1);
-    if (e.key === "ArrowLeft") go(-1);
+  const q=qs[qi],p=document.createElement('p');
+  p.innerHTML='<b>'+(qi+1)+'/'+qs.length+'</b> '+q[0];box.append(p);
+  sh(q.slice(1)).forEach(o=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=o;
+    b.onclick=()=>{
+      if(done)return;done=1;
+      if(o===q[1]){b.classList.add('right');score++}
+      else{b.classList.add('wrong');wrong.push(q);box.querySelectorAll('.opt').forEach(x=>{if(x.textContent===q[1])x.classList.add('right')})}
+      const n=document.createElement('button');n.textContent=qi+1<qs.length?'Következő':'Eredmény';
+      n.onclick=()=>{qi++;qShow()};box.append(n);n.focus();
+    };
+    box.append(b);
   });
+}
+qStart(Q);
 
-  document.getElementById("next").onclick = function () { go(1); };
-  document.getElementById("prev").onclick = function () { go(-1); };
-  document.getElementById("know").onclick = function () { known[deck[idx].q] = true; go(1); };
-  document.getElementById("again").onclick = function () { known[deck[idx].q] = false; go(1); };
-
-  document.getElementById("shuffle").onclick = function () {
-    for (var i = deck.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = deck[i]; deck[i] = deck[j]; deck[j] = t;
-    }
-    idx = 0; render();
-  };
-  document.getElementById("restart").onclick = function () {
-    deck = allCards.slice(); known = {}; idx = 0; render();
-  };
-  document.getElementById("redo").onclick = function () {
-    var rest = deck.filter(function (c) { return !known[c.q]; });
-    deck = rest.length ? rest : allCards.slice();
-    if (!rest.length) known = {};
-    idx = 0; render();
-  };
-
-  render();
-
-  /* ---------- Kvíz ---------- */
-  // Minden kérdésnél az első válasz a helyes; megjelenítéskor a sorrend összekeveredik.
-  var quizData = [
-    { q: "Mi a tudományos eredmény elérésének helyes sorrendje?",
-      a: ["Megfigyelés → elgondolás → kísérlet → elmélet → újabb kísérletek",
-          "Elmélet → megfigyelés → kísérlet",
-          "Kísérlet → elmélet → megfigyelés → elgondolás",
-          "Elgondolás → elmélet → megfigyelés"],
-      why: "Előbb megfigyelünk, majd elgondolást alkotunk, kísérletekkel megerősítjük, elméletet alkotunk, és azt újabb kísérletekkel igazoljuk." },
-    { q: "Kik alkalmazzák elsősorban a tudományos eredményeket?",
-      a: ["A mérnökök", "A tanárok", "A közgazdászok", "A történészek"],
-      why: "A tudományos eredményeket elsősorban a mérnökök alkalmazzák." },
-    { q: "Melyik az idő alapegysége?",
-      a: ["A másodperc", "A méter", "A kilogramm", "A Celsius-fok"],
-      why: "Az alapegységek: méter, másodperc, kilogramm, Celsius-fok. Az idő egysége a másodperc." },
-    { q: "Melyik mennyiség mértékegységét a Celsius-fok adja meg?",
-      a: ["A hőmérsékletét", "A hosszúságét", "A tömegét", "A térfogatét"],
-      why: "A Celsius-fok a Celsius-skála beosztása, vagyis a hőmérséklet egysége." },
-    { q: "Min alapulnak többnyire a mértékegység-átváltások?",
-      a: ["Tízessel való szorzáson vagy osztáson", "Százhússzal való szorzáson", "Mindig hatvanas váltószámon", "Összeadáson és kivonáson"],
-      why: "Az átváltás tízessel szorzáson vagy osztáson alapul, néhány kivétellel (például az idő egységei)." },
-    { q: "Mitől függ egy mérés pontossága?",
-      a: ["A mérőeszköz választásától és a mérés módjától", "Csak a mért tárgy méretétől", "A mérés időpontjától", "A mérést végző személy nevétől"],
-      why: "A pontosság a mérőeszköz választásától és a mérés módjától függ." },
-    { q: "Mivel kaphatunk jó becslést egy mérésre?",
-      a: ["A mérési adatok átlagolásával", "Egyetlen mérés eredményével", "A legnagyobb adat kiválasztásával", "A legkisebb adat kiválasztásával"],
-      why: "A mérési adatok átlagolása jó becslést ad." },
-    { q: "Melyik NEM szerepel a jegyzet legfontosabb arányosságai között?",
-      a: ["Köbös arányosság", "Egyenes arányosság", "Fordított arányosság", "Négyzetes arányosság"],
-      why: "A legfontosabbak: egyenes, fordított és négyzetes arányosság." },
-    { q: "Mi a sűrűség?",
-      a: ["A tömeg és a térfogat hányadosa", "A térfogat és a tömeg hányadosa", "A tömeg és a térfogat szorzata", "A tömeg és a térfogat különbsége"],
-      why: "Az anyag sűrűsége a tömegének és a térfogatának a hányadosa (ρ = tömeg / térfogat)." },
-    { q: "Hogyan függ össze az anyag tömege és térfogata?",
-      a: ["A tömeg egyenesen arányos a térfogattal", "A tömeg fordítottan arányos a térfogattal", "A tömeg a térfogat négyzetével arányos", "Nincs köztük kapcsolat"],
-      why: "Az anyag tömege egyenesen arányos a térfogatával." }
-  ];
-
-  var qzOrder = [], qzIdx = 0, qzScore = 0, qzLocked = false;
-
-  function qzShuffle(arr) {
-    for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-    }
-    return arr;
-  }
-
-  function qzStart() {
-    qzOrder = qzShuffle(quizData.slice());
-    qzIdx = 0; qzScore = 0;
-    qzRender();
-  }
-
-  function qzRender() {
-    var box = document.getElementById("qzBox");
-    var done = document.getElementById("qzDone");
-    var total = qzOrder.length;
-
-    if (qzIdx >= total) {
-      box.style.display = "none";
-      done.classList.add("show");
-      var pct = Math.round(qzScore / total * 100);
-      var msg = pct === 100 ? "Hibátlan, szuper!" :
-                pct >= 70 ? "Nagyon jó eredmény!" :
-                pct >= 50 ? "Jó úton vagy, még érdemes átnézni a hibás részeket." :
-                            "Nézd át még egyszer a jegyzetet és a kártyákat, aztán próbáld újra.";
-      document.getElementById("qzResult").textContent =
-        qzScore + " / " + total + " helyes válasz (" + pct + "%). " + msg;
-      document.getElementById("qzProgress").textContent = "Kész";
-      document.getElementById("qzBar").style.width = "100%";
-      return;
-    }
-
-    box.style.display = "";
-    done.classList.remove("show");
-    qzLocked = false;
-
-    var item = qzOrder[qzIdx];
-    document.getElementById("qzQ").textContent = item.q;
-    document.getElementById("qzFb").textContent = "";
-    document.getElementById("qzProgress").textContent = (qzIdx + 1) + ". kérdés / " + total;
-    document.getElementById("qzBar").style.width = (qzIdx / total * 100) + "%";
-
-    var optsEl = document.getElementById("qzOpts");
-    optsEl.innerHTML = "";
-    qzShuffle(item.a.slice()).forEach(function (opt) {
-      var b = document.createElement("button");
-      b.className = "qz-opt";
-      b.textContent = opt;
-      b.onclick = function () { qzPick(b, opt, item); };
-      optsEl.appendChild(b);
-    });
-
-    var next = document.getElementById("qzNext");
-    next.disabled = true;
-    next.textContent = (qzIdx === total - 1) ? "Eredmény →" : "Következő →";
-  }
-
-  function qzPick(btn, opt, item) {
-    if (qzLocked) return;
-    qzLocked = true;
-    var correct = item.a[0];
-    var kids = document.getElementById("qzOpts").children;
-    for (var i = 0; i < kids.length; i++) {
-      kids[i].classList.add("locked");
-      if (kids[i].textContent === correct) kids[i].classList.add("right");
-    }
-    var fb = document.getElementById("qzFb");
-    if (opt === correct) {
-      qzScore++;
-      fb.textContent = "Helyes! " + item.why;
-    } else {
-      btn.classList.add("wrong");
-      fb.textContent = "Nem jó. " + item.why;
-    }
-    document.getElementById("qzNext").disabled = false;
-  }
-
-  document.getElementById("qzNext").onclick = function () { qzIdx++; qzRender(); };
-  document.getElementById("qzRestart").onclick = qzStart;
-  qzStart();
+/* KÁRTYÁK: elöl|hátul */
+const F=[
+"Fizika|Görög eredetű szó: „a természet dolgai”",
+"A tudományos megismerés lépései|előzetes tudás → megfigyelés → elgondolás → kísérlet → elmélet → új tudás",
+"Mi az elmélet?|A kísérletekkel igazolt elgondolásból levont általános következtetés. Tudományos eredmény.",
+"Ki alkalmazza leginkább a fizikai ismereteket?|A mérnökök",
+"A mérési eredmény felépítése|mérőszám + mértékegység",
+"Mi a fizikai mennyiség?|Mérhető tulajdonság",
+"Hosszúság: jel és egység|l, méter (m)",
+"Térfogat: jel és egység|V, köbméter (m³)",
+"Felület: jel és egység|A, négyzetméter (m²)",
+"Idő: jel és egység|t, másodperc (s)",
+"Tömeg: jel és egység|m, kilogramm (kg)",
+"Hőmérséklet: jel és egység|T, Celsius-fok (°C)",
+"Hogyan olvasunk le analóg skáláról?|A mérendő mennyiséghez legközelebbi skálajel mérőszámát olvassuk le.",
+"Mi az SI?|Nemzetközi mértékegység-rendszer",
+"Jég olvadása / víz forrása|0 °C / 100 °C",
+"Elméleti leghidegebb hőmérséklet|−273 °C",
+"Mega, kilo, hekto, deka|M = 1 000 000; k = 1000; h = 100; dk = 10",
+"Deci, centi, milli, mikro|d = 0,1; c = 0,01; m = 0,001; µ = 0,000001",
+"1 nap hány másodperc?|24 · 60 · 60 = 86 400 s",
+"Idő: pontos váltószámok|1 perc = 60 s; 1 óra = 60 perc; 1 nap = 24 óra; 1 hét = 7 nap; 1 év = 12 hónap",
+"Idő: kerekített váltószámok|1 hónap ≈ 30 nap ≈ 4 hét; 1 év ≈ 365 nap ≈ 52 hét",
+"Hány számjegyre kerekítünk általában?|Az első háromra (47 942 mm ≈ 47,9 m)",
+"Mitől függ a mérés pontossága?|A mérőeszköz beosztásától és a mérés módjától",
+"Mit teszünk, ha nem mérhető pontosan?|Többször mérünk, és a mérési adatok átlagát vesszük. Ez jó becslés.",
+"Egyenes arányosság|A hányados állandó. Grafikon: origóból induló egyenes.",
+"Fordított arányosság|A szorzat állandó. Grafikon: hiperbola.",
+"Négyzetes arányosság|Ahányszor nagyobb az egyik, annak négyzetével nagyobb a másik. Grafikon: parabola.",
+"A sűrűség képlete|ρ = m / V",
+"A sűrűség mértékegységei|kg/m³ és g/cm³; 1 g/cm³ = 1000 kg/m³",
+"Tömeg és térfogat sűrűségből|m = ρ · V;   V = m / ρ",
+"Átlagsűrűség|A tárgy tömegének és térfogatának hányadosa (nem átlagszámítás)",
+"Víz / jég / olaj sűrűsége|1 / 0,9 / 0,9 g/cm³",
+"Vas (acél) / alumínium sűrűsége|7,8 / 2,7 g/cm³",
+"Higany / levegő sűrűsége|13,6 g/cm³ / 0,0013 g/cm³ (1,3 kg/m³)",
+"Két nem keveredő folyadék közül melyik süllyed?|A nagyobb sűrűségű az aljára süllyed, a kisebb felül marad."
+].map(s=>s.split('|'));
+let deck,fi,side,known=new Set();
+function fShow(){
+  const c=$('fc');
+  if(!deck.length){c.textContent='Minden kártyát tudsz!';c.classList.remove('back');$('fcount').textContent='Tudom: '+known.size+' / '+F.length;return}
+  const d=deck[fi];c.textContent=side?d[1]:d[0];c.classList.toggle('back',!!side);
+  $('fcount').textContent=(fi+1)+' / '+deck.length+' kártya a pakliban · Tudom: '+known.size+' / '+F.length;
+}
+function fMove(n){if(!deck.length)return;fi=(fi+n+deck.length)%deck.length;side=0;fShow()}
+function fFlip(){side=1-side;fShow()}
+function fReset(){known.clear();deck=sh(F);fi=0;side=0;fShow()}
+$('fc').onclick=fFlip;
+$('fc').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fFlip()}};
+$('fprev').onclick=()=>fMove(-1);
+$('fnext').onclick=()=>fMove(1);
+$('fknow').onclick=()=>{if(!deck.length)return;known.add(deck[fi]);deck.splice(fi,1);if(fi>=deck.length)fi=0;side=0;fShow()};
+$('freset').onclick=fReset;
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')fMove(1);else if(e.key==='ArrowLeft')fMove(-1);
+  else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();fFlip()}
+});
+fReset();
 </script>
+
+<p style="text-align:center;color:var(--muted)">Sok sikert a témazáróhoz!</p>
+</div>
 </body>
 </html>
